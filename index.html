@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Firebase JavaScript SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.3.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.3.1/firebase-database.js"></script>
+  </head>
+  <body>
+    <div class="form">
+      <div class="FormGroup">
+        <label for="ID">ID</label>
+        <input type="text" id="ID" readonly />
+      </div>
+
+      <div class="FormGroup">
+        <label for="username">username</label>
+        <input type="text" id="username" />
+      </div>
+      <div class="FormGroup">
+        <label for="mobile">mobile</label>
+        <input type="text" id="mobile" />
+      </div>
+
+      <div class="FormGroup">
+        <label for="email">email</label>
+        <input type="email" id="email" />
+      </div>
+      <button type="submit" onclick="save()">save</button>
+      <!-- <button id="sho" onclick="show()"> Show</button> -->
+      <a href="show.html" target="_blank"><button>show</button></a>
+    </div>
+
+    <div>
+      <table border="2">
+        <tr>
+          <th>ID/th></th>
+          <th>user name</th>
+          <th>mobile</th>
+          <th>email</th>
+          <th><button>UpddetData</button></th>
+          <th><button>btnDelet</button></th>
+        </tr>
+        <table border="1" id="content"></table>
+      </table>
+    </div>
+
+    <!-- <script src="main.js"></script> -->
+
+    <script type="module">
+
+      //تثبيت الداتا بيز ريل تيم
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  push,
+  get,
+  child,
+  update,
+} from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDup4cpkmh66mExVzz5hQ3qPmkvaf9RQqI",
+  authDomain: "techno-22.firebaseapp.com",
+  databaseURL: "https://techno-22-default-rtdb.firebaseio.com",
+  projectId: "techno-22",
+  storageBucket: "techno-22.appspot.com",
+  messagingSenderId: "962908798984",
+  appId: "1:962908798984:web:525b1ad7dcab93a96151bd",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+//استدعاء البيانات من الداتا بيز
+var database = getDatabase(app);
+var PostCollection = ref(database, "/rabea");
+//اظهر البيانات علطول لما بتحس ان في تغيير 
+onValue(PostCollection, (data) => {
+  Show(data.val());
+});
+
+// نعرف الجافا اسكربت ان ده من الاتش تي ام ال
+window.save = save;
+
+/// دالة الحفظ تحفظ الداتا داخل الداتا بيز
+function save() {
+  var ID = $("#ID").val();
+  var username = $("#username").val();
+  var email = $("#email").val();
+  var mobile = $("#mobile").val();
+
+  var DataInfo = {
+    UN: username,
+    email: email,
+    mb: mobile,
+  };
+
+if(ID==""){//لو الايدي فاضي اعمل اضافة 
+  push(PostCollection, DataInfo);
+
+} 
+else{
+  //عملية التعديل 
+const Upddets ={}
+Upddets[`/rabea/${ID}`]= DataInfo
+return update(ref(database),Upddets)
+}
+
+}
+
+//عرض البيانات من الداتا بيز
+
+function Show(posts) {
+  $("#content").empty();
+  for (var idKay in posts) {
+    var dataShow = `
+             
+                  <tr>   
+                  <td>${idKay}</td>
+                    <td> ${posts[idKay].UN} </td>
+                    <td>${posts[idKay].mb}  </td>
+                    <td> ${posts[idKay].email} </td>
+                    <td> <button onclick="Upddete('${idKay}')" >Upddet</button> </td>
+                    <td > <button onclick="del('${idKay}')" >delete</button> </td>
+
+                  </tr>`;
+    $("#content").append(dataShow);
+  }
+}
+
+//  تعديل علي الداتا
+window.Upddete = Upddete;
+
+function Upddete(id) {
+  get(child(ref(database), `/rabea/${id}`))
+    .then((data) => {
+      //هل الداتا موجودة
+      if (data.exists()) {
+        var data = data.val();
+        $("#ID").val(id);
+        $("#username").val(data.UN);
+        $("#email").val(data.email);
+        $("#mobile").val(data.mb);
+      } else {
+        alert("NO POST");
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+
+     
+}
+
+
+
+//الحذف
+window.del=del
+function del(id){
+
+  const Upddets ={}
+Upddets[`/rabea/${id}`]= null // احذف 
+return update(ref(database),Upddets)
+}
+
+    </script>
+  </body>
+</html>
